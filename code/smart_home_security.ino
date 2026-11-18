@@ -1,12 +1,13 @@
 
 // 360 DEGREE SAFETY SHIELD
 // ESP32 + BLYNK + SIM800L GSM SMART HOME SYSTEM
+
 // BLYNK CREDENTIALS
 #define BLYNK_TEMPLATE_ID "TMPL62XIo-7f_"
 #define BLYNK_TEMPLATE_NAME "Smart home security and automation system "
-#define BLYNK_AUTH_TOKEN "80BlLAwelkMCY54TWy_0hOemFwVE6qJd"
+#define BLYNK_AUTH_TOKEN "YOUR_BLYNK_AUTH_TOKEN"
 
-//  LIBRARIES 
+// LIBRARIES
 #define TINY_GSM_MODEM_SIM800
 
 #include <WiFi.h>
@@ -14,18 +15,18 @@
 #include <ESP32Servo.h>
 #include <TinyGsmClient.h>
 
-// WIFI CREDENTIALS 
-char ssid[] = "MARUF";
-char pass[] = "@#01828485065#@@";
+// WIFI CREDENTIALS
+char ssid[] = "YOUR_WIFI_NAME";
+char pass[] = "YOUR_WIFI_PASSWORD";
 
-// GSM CONFIGURATION 
+// GSM CONFIGURATION
 #define SerialMon Serial
 #define SerialAT Serial1
 
 #define MODEM_RX 16
 #define MODEM_TX 17
 
-#define ADMIN_NUMBER "+8801828485065"
+#define ADMIN_NUMBER "YOUR_ADMIN_PHONE_NUMBER"
 
 TinyGsm modem(SerialAT);
 bool gsmReady = false;
@@ -41,22 +42,22 @@ const int BUZZER_PIN = 25;
 const int TRIG_PIN = 5;
 const int ECHO_PIN = 18;
 
-//  SERVO PINS 
+// SERVO PINS
 const int SERVO1_PIN = 4;   // rain servo
 const int SERVO2_PIN = 2;   // door servo
 
 Servo myServo1;
 Servo myServo2;
 
-//  MQ2 THRESHOLDS 
+// MQ2 THRESHOLDS
 const int GAS_THRESHOLD = 1500;     // GAS LEAK
-const int SMOKE_THRESHOLD = 2500;   // SMOKE 
-const int MQ2_HYSTERESIS = 200;     // alert 
+const int SMOKE_THRESHOLD = 2500;   // SMOKE
+const int MQ2_HYSTERESIS = 200;     // alert
 
 // BLYNK TERMINAL
 WidgetTerminal terminal(V1);
 
-//  ALERT FLAGS 
+// ALERT FLAGS
 bool intruderTriggered = false;
 bool fireTriggered = false;
 bool gasTriggered = false;
@@ -69,11 +70,10 @@ int farCount = 0;
 int rainCount = 0;
 int dryCount = 0;
 
-//  TIMERS 
+// TIMERS
 unsigned long lastGSMCheck = 0;
 unsigned long lastWifiTry = 0;
 unsigned long lastBlynkTry = 0;
-
 
 // ALERT FUNCTION
 void sendAlert(String eventCode, String message) {
@@ -81,7 +81,8 @@ void sendAlert(String eventCode, String message) {
   Serial.println();
   Serial.println("========== ALERT ==========");
   Serial.println(message);
-  //BLYNK NOTIFICATION 
+
+  // BLYNK NOTIFICATION
   if (WiFi.status() == WL_CONNECTED && !Blynk.connected()) {
     Blynk.connect(3000);
   }
@@ -97,7 +98,8 @@ void sendAlert(String eventCode, String message) {
   } else {
     Serial.println("Blynk Not Connected! (SMS only)");
   }
-  //GSM SMS 
+
+  // GSM SMS
   if (gsmReady && modem.isNetworkConnected()) {
     bool smsStatus = modem.sendSMS(ADMIN_NUMBER, message);
 
@@ -111,6 +113,7 @@ void sendAlert(String eventCode, String message) {
     gsmReady = false;
   }
 }
+
 // ULTRASONIC FUNCTION
 long getDistance() {
 
@@ -128,11 +131,15 @@ long getDistance() {
 
   return distance;
 }
+
 // SETUP
 void setup() {
+
   Serial.begin(115200);
+
   Serial.println();
   Serial.println("SMART HOME SECURITY SYSTEM STARTING...");
+
   // SENSOR INITIALIZATION
   pinMode(IR_PIN, INPUT_PULLUP);
   pinMode(FLAME_PIN, INPUT_PULLUP);
@@ -143,15 +150,16 @@ void setup() {
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
 
-  //SERVO INITIALIZATION 
+  // SERVO INITIALIZATION
   myServo1.attach(SERVO1_PIN);
   myServo2.attach(SERVO2_PIN);
 
   myServo1.write(0);
   myServo2.write(0);
 
-  // BUZZER INITIALIZATION 
+  // BUZZER INITIALIZATION
   ledcAttach(BUZZER_PIN, 2000, 8);
+
   // GSM INITIALIZATION
   Serial.println("Initializing GSM Module...");
 
@@ -179,6 +187,7 @@ void setup() {
   WiFi.begin(ssid, pass);
 
   unsigned long t = millis();
+
   while (WiFi.status() != WL_CONNECTED && millis() - t < 10000) {
     delay(250);
   }
@@ -187,6 +196,7 @@ void setup() {
 
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("WIFI CONNECTED!");
+
     if (Blynk.connect(5000)) {
       Serial.println("BLYNK CONNECTED!");
     } else {
@@ -199,8 +209,10 @@ void setup() {
   Serial.println();
   Serial.println("ALL SYSTEMS INITIALIZED!");
 }
-//                     MAIN LOOP
+
+// MAIN LOOP
 void loop() {
+
   // WIFI / BLYNK HANDLING
   if (WiFi.status() == WL_CONNECTED) {
 
@@ -219,7 +231,7 @@ void loop() {
     WiFi.begin(ssid, pass);
   }
 
-  // GSM RECONNECTION 
+  // GSM RECONNECTION
   if (!gsmReady && millis() - lastGSMCheck >= 30000) {
 
     lastGSMCheck = millis();
@@ -237,8 +249,7 @@ void loop() {
 
   bool buzzerActive = false;
 
-  //            ULTRASONIC SENSOR (DOOR + SERVO2)
-
+  // ULTRASONIC SENSOR (DOOR + SERVO2)
   long distance = getDistance();
 
   Serial.print("Distance: ");
@@ -267,8 +278,7 @@ void loop() {
     doorTriggered = false;
   }
 
-  //            RAIN SENSOR (SERVO1 ONLY, NO ALERT)
-
+  // RAIN SENSOR (SERVO1 ONLY, NO ALERT)
   if (digitalRead(RAIN_PIN) == LOW) {
     rainCount++;
     dryCount = 0;
@@ -277,12 +287,11 @@ void loop() {
     dryCount++;
   }
 
-
   if (rainCount >= 3) {
     servoShouldOpenR = true;
   }
-  //  SERVO CONTROL
 
+  // SERVO CONTROL
   if (servoShouldOpenR) {
     myServo1.write(90);
   } else {
@@ -296,7 +305,6 @@ void loop() {
   }
 
   // IR SENSOR
-
   if (digitalRead(IR_PIN) == LOW) {
 
     if (!intruderTriggered) {
@@ -310,8 +318,8 @@ void loop() {
   } else {
     intruderTriggered = false;
   }
-  // FLAME SENSOR
 
+  // FLAME SENSOR
   if (digitalRead(FLAME_PIN) == LOW) {
 
     if (!fireTriggered) {
@@ -326,8 +334,7 @@ void loop() {
     fireTriggered = false;
   }
 
-  //   MQ2 SENSOR (GAS + SMOKE )
-
+  // MQ2 SENSOR (GAS + SMOKE SEPARATE)
   int gas = analogRead(MQ2_PIN);
 
   Serial.print("GAS VALUE: ");
@@ -335,12 +342,11 @@ void loop() {
 
   if (gas >= SMOKE_THRESHOLD && gas < 4095) {
 
-
     if (!smokeTriggered) {
       Serial.println("SMOKE DETECTED!");
       sendAlert("smoke_alert", "DANGER! SMOKE DETECTED!");
       smokeTriggered = true;
-      gasTriggered = true;  
+      gasTriggered = true;
     }
 
     buzzerActive = true;
@@ -357,13 +363,12 @@ void loop() {
     buzzerActive = true;
   }
 
-
   if (gas < (GAS_THRESHOLD - MQ2_HYSTERESIS)) {
     gasTriggered = false;
     smokeTriggered = false;
   }
- //   BUZZER CONTROL
 
+  // BUZZER CONTROL
   if (buzzerActive) {
     ledcWriteTone(BUZZER_PIN, 2000);
   } else {
