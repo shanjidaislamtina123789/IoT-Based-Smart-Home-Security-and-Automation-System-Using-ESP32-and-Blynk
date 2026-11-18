@@ -53,20 +53,6 @@ Create the following five events in your Blynk Template. The event codes must ma
 | Gas Alert | gas_alert |
 | Smoke Alert | smoke_alert |
 
-## Repository Structure
-
-esp32-smart-home-security-automation/
-│
-├── code/
-│   └── smart_home_security.ino
-│
-├── circuit/
-│   └── circuit_diagram.png
-│
-├── README.md
-│
-└── PIN_CONFIGURATION.md
-
 ## Hardware Connections
 
 The hardware components are connected to the ESP32 according to the pin configuration provided in [PIN_CONFIGURATION.md](PIN_CONFIGURATION.md).
