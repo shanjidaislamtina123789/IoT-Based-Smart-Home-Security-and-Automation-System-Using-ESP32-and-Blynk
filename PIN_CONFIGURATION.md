@@ -1,62 +1,65 @@
-# Hardware Connection Information (Table II & Pin Map)
+# Hardware Connection Information (Table II and Pin Map)
 
-This document describes the hardware components and their corresponding connections to the ESP32 microcontroller.
+This document lists the components of the prototype and their connections to the ESP32 (ESP32-WROOM-32 DevKit). The pin numbers match the firmware in the `code` folder.
 
 ## 1. ESP32 Pin Configuration
 
-| Component Name | Model / Specification | ESP32 GPIO Pin | Signal Type / Notes |
+| Component | Model / Specification | ESP32 GPIO | Signal type / Notes |
 |---|---|---|---|
-| Power Regulation | LM2596 DC-DC Buck Converter | VIN / 5V Rail | Regulated 5.0V DC supply |
-| SIM800L GSM Module | SIM800L Cellular Module | TX: GPIO 16, RX: GPIO 17 | UART Serial (Serial1), 9600 Baud |
-| Ultrasonic Sensor | HC-SR04 | Trig: GPIO 5, Echo: GPIO 18 | Digital Pulse Input/Output |
-| IR Obstacle Sensor | FC-51 / Generic IR | GPIO 13 | Digital Input (INPUT_PULLUP) |
-| Flame Sensor | 4-pin IR Flame Sensor | GPIO 14 | Digital Input (INPUT_PULLUP) |
-| MQ-2 Gas Sensor | MQ-2 Analog Module | GPIO 34 (ADC1_CH6) | Analog Input (Gas and Smoke Detection) |
-| Rain Sensor | Rain Detection Module | GPIO 27 | Digital Input (INPUT_PULLUP) |
-| Door Servo Motor | SG90 Servo Motor | GPIO 2 | PWM Output |
-| Rain Servo Motor | SG90 Servo Motor | GPIO 4 | PWM Output |
-| Buzzer | Active Piezo Buzzer | GPIO 25 | PWM Output |
+| Ultrasonic sensor | HC-SR04 | Trig: GPIO 5, Echo: GPIO 18 | Digital pulse output / input |
+| Gas and smoke sensor | MQ-2 module | GPIO 34 (ADC1) | Analog input, 12-bit ADC (0-4095) |
+| Flame sensor | HW-072 | GPIO 14 | Digital input (INPUT_PULLUP), active LOW |
+| IR intrusion sensor | FC-51 | GPIO 13 | Digital input (INPUT_PULLUP), active LOW |
+| Rain sensor | Rain sensor module | GPIO 27 | Digital input (INPUT_PULLUP), LOW = rain |
+| Door servo | SG90 | GPIO 2 | PWM output |
+| Clothesline servo | SG90 | GPIO 4 | PWM output |
+| Buzzer | Active piezo buzzer | GPIO 25 | LEDC output (2 kHz tone) |
+| GSM module | SIM800L | GPIO 16 (ESP32 RX), GPIO 17 (ESP32 TX) | UART (Serial1), 9600 baud |
 
 ## 2. SIM800L UART Connections
 
-The SIM800L GSM module communicates with the ESP32 through UART serial communication using Serial1 at 9600 baud.
-
-| SIM800L Pin | ESP32 Pin |
+| SIM800L pin | ESP32 pin |
 |---|---|
-| TX | GPIO 16 (RX) |
-| RX | GPIO 17 (TX) |
+| TXD | GPIO 16 (ESP32 RX) |
+| RXD | GPIO 17 (ESP32 TX) |
 | GND | Common GND |
+| VCC | Separate 3.7 V battery (see Section 4) |
 
 ## 3. Rain Sensor and Servo Connections
 
-The rain sensor is connected to GPIO 27 and operates as a digital input. When rain is detected, the ESP32 activates the rain servo motor connected to GPIO 4.
-
 | Component | Connection |
 |---|---|
-| Rain Sensor DO | ESP32 GPIO 27 |
-| Rain Sensor VCC | Suitable supply according to module specification |
-| Rain Sensor GND | Common GND |
-| Rain Servo Signal | ESP32 GPIO 4 |
-| Rain Servo VCC | Suitable regulated servo power supply |
-| Rain Servo GND | Common GND |
+| Rain sensor DO | GPIO 27 |
+| Rain sensor VCC / GND | Supply according to the module specification / common GND |
+| Clothesline servo signal | GPIO 4 |
+| Door servo signal | GPIO 2 |
+| Servo VCC / GND | 5 V supply / common GND |
 
-## 4. Important Electrical Notes
+## 4. Power Supply
 
-1. The SIM800L requires a separate, stable 3.7–4.2 V high-current power supply.
-2. The SIM800L and ESP32 must share a common ground.
-3. The HC-SR04 Echo output can be 5 V. Use a suitable voltage divider or logic-level shifter before connecting it to the ESP32.
-4. Servo motors should receive an appropriate external regulated power supply capable of providing sufficient current.
-5. Check the voltage and current requirements of each component before powering the circuit.
-6. Ensure that the ESP32, sensors, servo power supply, and GSM module share a common ground where required.
-7. Verify all physical connections against the actual hardware before operating the system.
+| Item | Description |
+|---|---|
+| Main supply | Two 3.7 V 18650 cells in series (7.4 V) |
+| Regulation | LM2596 buck converter, set to 5 V |
+| SIM800L supply | Third 3.7 V 18650 cell, directly connected to the module |
+| Charging | External Li-ion charger; there is no charging circuit in the prototype |
+| Ground | All grounds are connected together |
 
-## 5. Additional Notes
+The SIM800L can draw current peaks of about 2 A during transmission, so it has its own cell and must not be powered from the ESP32.
 
-- GPIO 34 is an input-only pin and is used for analog readings from the MQ-2 sensor.
-- The SIM800L communicates with the ESP32 through UART serial communication.
-- The door servo motor is controlled through GPIO 2.
-- The rain servo motor is controlled through GPIO 4.
-- The rain sensor provides digital input through GPIO 27.
-- The buzzer is controlled through GPIO 25 using the ESP32 LEDC PWM functionality.
-- The rain detection feature controls the rain servo; the current firmware does not generate a separate Blynk or GSM rain alert.
+## 5. Important Electrical Notes
+
+1. The SIM800L and the ESP32 must share a common ground.
+2. The MQ-2 analog output and the SIM800L UART lines are connected directly to the ESP32 without a voltage divider or level shifter. This worked in the prototype, but the MQ-2 output can exceed 3.3 V, so a divider is recommended in a final design.
+3. The HC-SR04 Echo output is a 5 V signal. Use a voltage divider or level shifter before the ESP32 pin in a final design.
+4. GPIO 34 is an input-only pin.
+5. GPIO 2 is a boot-strapping pin on the ESP32. If the board does not boot reliably, check this connection first.
+6. Check the voltage and current requirements of each component before powering the circuit.
+7. Verify all connections against your own hardware before operating the system.
+
+## 6. Notes
+
+- The rain sensor only moves the clothesline servo. The firmware sends no Blynk or SMS alert for rain.
+- The ultrasonic sensor only moves the door servo. The firmware sends no alert for it.
+- The circuit diagram is in the `circuit` folder.
 
