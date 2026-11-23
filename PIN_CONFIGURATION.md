@@ -1,6 +1,6 @@
 # Hardware Connection Information (Table II and Pin Map)
 
-This document lists the components of the prototype and their connections to the ESP32 (ESP32-WROOM-32 DevKit). The pin numbers match the firmware in the `code` folder.
+This document lists the components of the prototype and their connections to the ESP32 (ESP32-WROOM-32 DevKit). The pin numbers match the firmware in the `code` folder. The wiring diagram is `circuit/circuit_diagram.png`.
 
 ## 1. ESP32 Pin Configuration
 
@@ -41,9 +41,11 @@ This document lists the components of the prototype and their connections to the
 |---|---|
 | Main supply | Two 3.7 V 18650 cells in series (7.4 V) |
 | Regulation | LM2596 buck converter, set to 5 V |
+| ESP32 3.3 V | Provided by the on-board regulator of the ESP32 DevKit |
 | SIM800L supply | Third 3.7 V 18650 cell, directly connected to the module |
+| SIM800L capacitor | 470 uF capacitor across the SIM800L supply terminals, in parallel with the cell |
 | Charging | External Li-ion charger; there is no charging circuit in the prototype |
-| Ground | All grounds are connected together |
+| Ground | The cell, the capacitor and the SIM800L share one ground, which is connected to the common ground of the main circuit |
 
 The SIM800L can draw current peaks of about 2 A during transmission, so it has its own cell and must not be powered from the ESP32.
 
@@ -61,5 +63,4 @@ The SIM800L can draw current peaks of about 2 A during transmission, so it has i
 
 - The rain sensor only moves the clothesline servo. The firmware sends no Blynk or SMS alert for rain.
 - The ultrasonic sensor only moves the door servo. The firmware sends no alert for it.
-- The circuit diagram is in the `circuit` folder.
 

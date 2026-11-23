@@ -31,7 +31,9 @@ This is an academic prototype. It is not a certified safety or security device.
 - Active piezo buzzer
 - SIM800L GSM module
 - LM2596 buck converter
-- Three 18650 Li-ion cells, breadboards and jumper wires
+- Three 18650 Li-ion cells
+- 470 uF capacitor (across the SIM800L supply)
+- Breadboards and jumper wires
 
 ## Software and Libraries
 
@@ -61,13 +63,13 @@ The Blynk dashboard only receives notifications. It sends no commands to the boa
 
 ## Hardware Connections
 
-The pin assignment is in [PIN_CONFIGURATION.md](PIN_CONFIGURATION.md). The circuit diagram is in the `circuit` folder.
+The pin assignment is in [PIN_CONFIGURATION.md](PIN_CONFIGURATION.md). The circuit diagram is in the `circuit` folder (`circuit_diagram.png`).
 
 ## Power Supply Considerations
 
-- Two 18650 cells in series (7.4 V) feed the LM2596 buck converter, set to 5 V.
-- The SIM800L needs its own 3.7-4.2 V supply that can deliver current peaks of about 2 A. Do not power it from the ESP32.
-- Connect the grounds of the ESP32, the sensors and the SIM800L together.
+- Two 18650 cells in series (7.4 V) feed the LM2596 buck converter, set to 5 V. The 3.3 V is provided by the ESP32 DevKit's on-board regulator.
+- The SIM800L needs its own 3.7-4.2 V supply that can deliver current peaks of about 2 A. It is powered by a third 18650 cell, with a 470 uF capacitor across the same supply terminals. Do not power it from the ESP32.
+- Connect the grounds of the ESP32, the sensors and the SIM800L supply together.
 - The cells are charged outside the system. The prototype has no charging circuit.
 - Use a voltage divider or level shifter for the HC-SR04 Echo signal and for the MQ-2 analog output in a final design.
 
